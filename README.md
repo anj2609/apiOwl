@@ -18,13 +18,13 @@ Apiowl is a powerful Flutter app designed to keep APIs awake by sending requests
 
 <!-- Add screenshots of the app -->
 <div style="display: flex; gap: 10px; align-items: center;">
-  <img src="readme_images/2.jpeg" alt="Home Screen" width="300" height = "400" />
-  <img src="readme_images/1.jpeg" alt="Home Screen" width="300" height="400" />
+  <img src="readme_images/2.jpeg" alt="Home Screen" width="250" height = "400" />
+  <img src="readme_images/1.jpeg" alt="Home Screen" width="250" height="400" />
 
 
 
 
- <img src="readme_images/3.jpeg" alt="Home Screen" width="300" height="400" />
+ <img src="readme_images/3.jpeg" alt="Home Screen" width="250" height="400" />
 
 </div>  
 
