@@ -43,6 +43,7 @@ Future<void> requestNotificationPermission() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   try {
+     
     final info = await androidInfo;
     if (info.version.sdkInt >= 33) {
       final status = await Permission.notification.status;
@@ -64,13 +65,12 @@ Future<void> initializeService() async {
   await androidInfo; 
   final service = FlutterBackgroundService();
   
-  
   await setupNotificationChannel();
   
   await service.configure(
     iosConfiguration: IosConfiguration(),
     androidConfiguration: AndroidConfiguration(
-      autoStart: true,
+      autoStart: false,
       onStart: onStart,
       isForegroundMode: true,
       foregroundServiceNotificationId: 888,
