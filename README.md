@@ -1,6 +1,6 @@
 # Apiowl
 
-![Apiowl Logo](https://via.placeholder.com/150) <!-- Replace with your app's logo if available -->
+![Apiowl Logo](android/app/src/main/res/mipmap-hdpi/ic_launcher.png) <!-- Replace with your app's logo if available -->
 
 Apiowl is a powerful Flutter app designed to keep APIs awake by sending requests at regular intervals. With an intuitive interface and a sleek design inspired by Discord, Apiowl ensures your APIs stay active without requiring manual intervention.
 
@@ -17,11 +17,16 @@ Apiowl is a powerful Flutter app designed to keep APIs awake by sending requests
 ## Screenshots
 
 <!-- Add screenshots of the app -->
-![Home Screen](https://via.placeholder.com/300x600)  
-*Home Screen: Input API URL and set the interval.*
+<div style="display: flex; gap: 10px; align-items: center;">
+  <img src="readme_images/2.jpeg" alt="Home Screen" width="250" height = "400" />
+  <img src="readme_images/1.jpeg" alt="Home Screen" width="250" height="400" />
 
-![Notifications](https://via.placeholder.com/300x600)  
-*Local notifications for API call results.*
+
+
+
+ <img src="readme_images/3.jpeg" alt="Home Screen" width="250" height="400" />
+
+</div>  
 
 ## Getting Started
 
