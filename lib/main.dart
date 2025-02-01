@@ -1,16 +1,26 @@
+import 'package:apiowl/screens/oauth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'service.dart';
-import 'api_caller_screen.dart';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:async';
 import 'dart:developer';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart';
+
 import "package:flutter/services.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+
+    options: DefaultFirebaseOptions.currentPlatform,
+
+).then((FirebaseApp value) => print("Firebase initialized"));
   // print(
   //     await DisableBatteryOptimization.isBatteryOptimizationDisabled ?? false);
   // while (
@@ -71,7 +81,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const ApiCallerScreen(),
+      home: const Auth(),
     );
   }
 }

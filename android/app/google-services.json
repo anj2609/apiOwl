@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "36751265954",
+    "project_id": "apiowl-81bc5",
+    "storage_bucket": "apiowl-81bc5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36751265954:android:c5c0c31a20330e6f3407fb",
+        "android_client_info": {
+          "package_name": "com.si.apiowl"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "36751265954-r3hca8jpvgkim1h4tblhmbqhqm0tkpvc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.si.apiowl",
+            "certificate_hash": "3c0c3c3ad770e06f623b84ac4f3050d472ed8e39"
+          }
+        },
+        {
+          "client_id": "36751265954-emfjjjfhqfjskba79t10vgsim7rq40eb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj3G8pTRuasV-BlL7FCHG_wPdpli2dFuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "36751265954-emfjjjfhqfjskba79t10vgsim7rq40eb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "36751265954-kg5b5m31tojij408dfl8pnabm1655rd8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.apiowl"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer';
-import 'service.dart' as servicess;
+import '../service.dart' as servicess;
 import 'package:loader_overlay/loader_overlay.dart';
 
 class ApiCallerScreen extends StatefulWidget {
