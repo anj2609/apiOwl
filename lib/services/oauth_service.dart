@@ -25,18 +25,18 @@ class OauthService {
           await auth.signInWithCredential(AuthCredential);
       final User? user = userCredential.user;
       if (user != null) {
-        // print("****************" * 100);
-        // print("Sign-in successful: ${user.uid}");
-        // print(user.displayName);
-        // print(user.email);
-        // print(user.photoURL);
-        // print(user.phoneNumber);
-        // print(user.isAnonymous);
-        // print(user.metadata);
-        // print(user.providerData);
-        // print(user.refreshToken);
-        // print(user.tenantId);
-        // print(user.uid);
+        print("****************" * 100);
+        print("Sign-in successful: ${user.uid}");
+        print(user.displayName);
+        print(user.email);
+        print(user.photoURL);
+        print(user.phoneNumber);
+        print(user.isAnonymous);
+        print(user.metadata);
+        print(user.providerData);
+        print(user.refreshToken);
+        print(user.tenantId);
+        print(user.uid);
         await FirebaseFirestore.instance
             .collection("user")
             .doc(user.displayName)
