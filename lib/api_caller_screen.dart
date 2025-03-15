@@ -4,6 +4,8 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer';
 import 'service.dart' as servicess;
+import 'package:interactive_media_ads/interactive_media_ads.dart';
+import 'package:video_player/video_player.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 
 class ApiCallerScreen extends StatefulWidget {
@@ -22,8 +24,25 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
   late int _interval;
   bool textfield = true;
   late String _apiUrl;
+  bool _shouldShowContentVideo = false;
 
   final _formKey = GlobalKey<FormState>();
+
+  static const String _adTagUrl =
+      "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/12431969999/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=";
+  late final AdsLoader _adsLoader;
+  AdsManager? _adsManager;
+  final AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
+  final bool _shouldShowAds = true;
+  late final VideoPlayerController _contentVideoController;
+  late final AdDisplayContainer _adDisplayContainer =
+      AdDisplayContainer(onContainerAdded: (AdDisplayContainer container) {
+    _requestAds(container);
+  });
+
+  Future<void> _requestAds(AdDisplayContainer container) {
+    return Future.value();
+  }
 
   @override
   void initState() {
@@ -32,7 +51,36 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
     _intervalController = TextEditingController();
     _initializeSharedPreferences();
     WidgetsBinding.instance.addObserver(this);
+    _contentVideoController = VideoPlayerController.networkUrl(
+      Uri.parse(
+          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"),
+    )
+      ..addListener(() {
+        if (_contentVideoController.value.isCompleted) {
+          _adsLoader.contentComplete();
+        }
+        setState(() {});
+      })
+      ..initialize().then((_) {
+        setState(() {});
+      });
   }
+
+  Future<void> _resumeContent() {
+    setState(() {
+      _shouldShowContentVideo = true;
+    });
+    return _contentVideoController.play();
+  }
+
+  Future<void> _pauseContent() {
+    setState(() {
+      _shouldShowContentVideo = false;
+    });
+    return _contentVideoController.pause();
+  }
+
+ 
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
@@ -255,9 +303,27 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
                       ],
                     ),
                   ),
+
+                  SizedBox(width: 400,
+                    child:!_contentVideoController.value.isInitialized ?
+                    Container() :
+                    AspectRatio(aspectRatio: _contentVideoController.value.aspectRatio,
+                    child: Stack(
+                      children: <Widget>[
+                        _adDisplayContainer,
+                        if(_shouldShowContentVideo)
+                        VideoPlayer(_contentVideoController),
+                      ],
+                    ),),),
+                    
                 ],
               ),
+              
             ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _shouldShowContentVideo ? _pauseContent : _resumeContent,
+            child: Icon(_shouldShowContentVideo ? Icons.pause : Icons.play_arrow),
           ),
         ),
       ),
