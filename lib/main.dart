@@ -87,7 +87,7 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
           }
-          return snapshot.data != null ? ApiCallerScreen() : Auth();
+          return snapshot.data != null ? ApiCallerScreen() : ApiCallerScreen();
         },
       ),
     );
