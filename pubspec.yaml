@@ -30,6 +30,8 @@ dependencies:
   interactive_media_ads: ^0.2.3+8
   flutter_secure_storage: ^9.2.4
 
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

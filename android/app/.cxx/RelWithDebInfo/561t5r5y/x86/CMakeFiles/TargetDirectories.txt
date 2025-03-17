@@ -1,0 +1,2 @@
+C:/Users/srgup/OneDrive/Desktop/ApiOwl/android/app/.cxx/RelWithDebInfo/561t5r5y/x86/CMakeFiles/edit_cache.dir
+C:/Users/srgup/OneDrive/Desktop/ApiOwl/android/app/.cxx/RelWithDebInfo/561t5r5y/x86/CMakeFiles/rebuild_cache.dir

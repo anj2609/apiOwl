@@ -7,6 +7,7 @@ import '../service.dart' as servicess;
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:interactive_media_ads/interactive_media_ads.dart';
 import 'package:video_player/video_player.dart';
+import 'package:upi_india/upi_india.dart';
 
 class ApiCallerScreen extends StatefulWidget {
   const ApiCallerScreen({super.key});
@@ -26,6 +27,8 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
   late String _apiUrl;
 
   final _formKey = GlobalKey<FormState>();
+
+
 
   static const String _adTagUrl =
       "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=";
@@ -85,12 +88,16 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
     // Moved outside the constructor
   });
 
+//Upi function
+
+
   @override
   void initState() {
     super.initState();
     _apiUrlController = TextEditingController();
     _intervalController = TextEditingController();
     _initializeSharedPreferences();
+   
     WidgetsBinding.instance.addObserver(this);
 
     _contentVideoController = VideoPlayerController.networkUrl(
@@ -227,6 +234,11 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
       }
     }
   }
+
+
+
+
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -367,6 +379,8 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
                             ),
                           ),
                   ),
+                  
+                  // GooglePayButton(paymentConfiguration: paymentConfiguration, paymentItems: paymentItems)
                 ],
               ),
             ),
@@ -398,4 +412,9 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
     });
     return _contentVideoController.pause();
   }
+
+
 }
+
+
+
