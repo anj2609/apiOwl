@@ -28,7 +28,7 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
   final _formKey = GlobalKey<FormState>();
 
   static const String _adTagUrl =
-      "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/12431969999/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=";
+      "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=";
   late final AdsLoader _adsLoader;
   AdsManager? _adsManager;
   final AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
@@ -56,13 +56,13 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
                 _resumeContent();
                 break;
               case AdEventType.allAdsCompleted:
-                manager.destroy();
-                _adsManager = null;
+                _requestAds(container);
+
                 break;
               case AdEventType.complete:
-                manager.destroy();
+                _requestAds(container);
                 break;
-              case AdEventType.skipped:
+              case AdEventType.clicked:
                 break;
 
               default:
@@ -81,7 +81,8 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
         _resumeContent();
       },
     );
-    _requestAds(container); // Moved outside the constructor
+    _requestAds(container);
+    // Moved outside the constructor
   });
 
   @override
@@ -94,7 +95,7 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
 
     _contentVideoController = VideoPlayerController.networkUrl(
       Uri.parse(
-          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"),
+          "https://drive.google.com/uc?export=download&id=1pP3rCR9pr2g-tUmKhZAFOfqgD_Fg1n2c"),
     )
       ..addListener(() {
         if (_contentVideoController.value.isCompleted) {
@@ -117,16 +118,17 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
           await _prefs.setBool('service_running', false);
           service.invoke("stopService");
           await Future.delayed(const Duration(seconds: 2));
+          _adsManager?.start();
         }
         break;
       case AppLifecycleState.hidden:
-        // Handle hidden state if needed
+        _pauseContent();
         break;
       case AppLifecycleState.inactive:
-        // Handle inactive state if needed
+        _pauseContent();
         break;
       case AppLifecycleState.paused:
-        // Handle paused state if needed
+        _pauseContent();
         break;
       case AppLifecycleState.resumed:
         // Handle resumed state if needed
@@ -369,11 +371,11 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: _shouldShowContentVideo ? _pauseContent : _resumeContent,
-            child:
-                Icon(_shouldShowContentVideo ? Icons.pause : Icons.play_arrow),
-          ),
+          // floatingActionButton: FloatingActionButton(
+          //   onPressed: _shouldShowContentVideo ? _pauseContent : _resumeContent,
+          //   child:
+          //       Icon(_shouldShowContentVideo ? Icons.pause : Icons.play_arrow),
+          // ),
         ),
       ),
     );
