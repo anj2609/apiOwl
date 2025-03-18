@@ -29,6 +29,8 @@ dependencies:
   video_player: ^2.9.3
   interactive_media_ads: ^0.2.3+8
   flutter_secure_storage: ^9.2.4
+  upi_pay: ^1.1.0
+  flutter_svg: ^2.0.17
 
 
 

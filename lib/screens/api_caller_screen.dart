@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:developer';
+import 'dart:developer' as dev;
 import '../service.dart' as servicess;
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:interactive_media_ads/interactive_media_ads.dart';
 import 'package:video_player/video_player.dart';
-import 'package:upi_india/upi_india.dart';
+import 'package:upi_pay/upi_pay.dart';
+import 'dart:math';
+import 'dart:io';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ApiCallerScreen extends StatefulWidget {
   const ApiCallerScreen({super.key});
@@ -25,10 +28,11 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
   late int _interval;
   bool textfield = true;
   late String _apiUrl;
-
+  List<ApplicationMeta>? _apps;
   final _formKey = GlobalKey<FormState>();
-
-
+  //upi plugins and tehhir variables
+  final upiPay = UpiPay();
+  bool _showapps = false;
 
   static const String _adTagUrl =
       "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=";
@@ -88,16 +92,17 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
     // Moved outside the constructor
   });
 
-//Upi function
-
-
   @override
   void initState() {
     super.initState();
     _apiUrlController = TextEditingController();
     _intervalController = TextEditingController();
     _initializeSharedPreferences();
-   
+    Future.delayed(Duration(milliseconds: 0), () async {
+      _apps = await upiPay.getInstalledUpiApplications(
+          statusType: UpiApplicationDiscoveryAppStatusType.all);
+      setState(() {});
+    });
     WidgetsBinding.instance.addObserver(this);
 
     _contentVideoController = VideoPlayerController.networkUrl(
@@ -115,13 +120,130 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
       });
   }
 
+  Widget appWidget(ApplicationMeta appMeta) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        appMeta.iconImage(48), // dev.logo
+        Container(
+          margin: EdgeInsets.only(top: 4),
+          alignment: Alignment.center,
+          child: Text(
+            appMeta.upiApplication.getAppName(),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _submitButton() {
+    return Container(
+      margin: EdgeInsets.only(top: 32),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: MaterialButton(
+              onPressed: () async => await _onTap(_apps![0]),
+              color: Theme.of(context).primaryColor,
+              height: 48,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6)),
+              child: Text('Buy me a coffee',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium!
+                      .copyWith(color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _androidApps() {
+    return Container(
+      margin: EdgeInsets.only(top: 10, bottom: 10),
+      child: Column(
+        // mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Container(
+            margin: EdgeInsets.only(bottom: 0),
+            // child: Text(
+            //   'Pay Using',
+            //   style: Theme.of(context).textTheme.bodyMedium,
+            // ),
+          ),
+          if (_apps != null) _appsGrid(_apps!.map((e) => e).toList()),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _onTap(ApplicationMeta app) async {
+    final transactionRef = Random.secure().nextInt(1 << 32).toString();
+    print("Starting transaction with id $transactionRef");
+
+    final a = await upiPay.initiateTransaction(
+      amount: '15.00',
+      app: app.upiApplication,
+      receiverName: 'Srayansh Gupta',
+      receiverUpiAddress: 'sr.gupta621@oksbi',
+      transactionRef: transactionRef,
+      transactionNote: 'Buy me a coffee',
+    );
+
+    print(a);
+  }
+
+  GridView _appsGrid(List<ApplicationMeta> apps) {
+    apps.sort((a, b) => a.upiApplication
+        .getAppName()
+        .toLowerCase()
+        .compareTo(b.upiApplication.getAppName().toLowerCase()));
+    return GridView.count(
+      crossAxisCount: 4,
+      shrinkWrap: true,
+      mainAxisSpacing: 4,
+      crossAxisSpacing: 4,
+      // childAspectRatio: 1.6,
+      physics: NeverScrollableScrollPhysics(),
+      children: apps
+          .map(
+            (it) => Material(
+              key: ObjectKey(it.upiApplication),
+              // color: Colors.grey[200],
+              child: InkWell(
+                onTap: Platform.isAndroid ? () async => await _onTap(it) : null,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    it.iconImage(48),
+                    Container(
+                      margin: EdgeInsets.only(top: 4),
+                      alignment: Alignment.center,
+                      child: Text(
+                        it.upiApplication.getAppName(),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.detached:
         final service = FlutterBackgroundService();
         if (await service.isRunning()) {
-          log("App detached, cleaning up service");
+          dev.log("App detached, cleaning up service");
           await _prefs.setBool('service_running', false);
           service.invoke("stopService");
           await Future.delayed(const Duration(seconds: 2));
@@ -180,7 +302,7 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
     service.invoke("stopService");
     try {
       if (isRunning) {
-        log("Stopping Service...");
+        dev.log("Stopping Service...");
         await _prefs.setBool('service_running', false);
         service.invoke("stopService");
 
@@ -188,16 +310,16 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
         while (await service.isRunning() && attempts < 5) {
           await Future.delayed(const Duration(seconds: 1));
           attempts++;
-          log("Waiting for service to stop - attempt $attempts");
+          dev.log("Waiting for service to stop - attempt $attempts");
         }
 
         setState(() => _isRunning = false);
         setState(() {
           textfield = true;
         });
-        log("Service stopped successfully");
+        dev.log("Service stopped successfully");
       } else {
-        log("Starting Service...");
+        dev.log("Starting Service...");
 
         if (_formKey.currentState?.validate() ?? false) {
           await _prefs.setString('api_url', _apiUrlController.text);
@@ -215,14 +337,14 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
             setState(() {
               textfield = false;
             });
-            log("Service started successfully");
+            dev.log("Service started successfully");
           } else {
             throw Exception("Failed to start service");
           }
         }
       }
     } catch (e) {
-      log("Service error: $e");
+      dev.log("Service error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
@@ -234,11 +356,6 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
       }
     }
   }
-
-
-
-
- 
 
   @override
   Widget build(BuildContext context) {
@@ -263,133 +380,143 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
             backgroundColor: const Color(0xFF292B2F),
           ),
           body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          enabled: !_isRunning,
-                          maxLength: 100,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'[a-zA-Z0-9\-._~:/?#\[\]@!$&()*+,;=]')),
-                            FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                          ],
-                          keyboardType: TextInputType.url,
-                          controller: _apiUrlController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            counterText: "",
-                            labelText: 'API URL',
-                            labelStyle: TextStyle(color: Colors.white70),
-                            border: OutlineInputBorder(),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.blue, width: 2),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.red, width: 2),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'API URL cannot be empty';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 15),
-                        TextFormField(
-                          enabled: !_isRunning,
-                          maxLength: 4,
-                          controller: _intervalController,
-                          style: const TextStyle(color: Colors.white),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                            FilteringTextInputFormatter.deny(RegExp(r'\.')),
-                          ],
-                          decoration: const InputDecoration(
-                            counterText: "",
-                            labelText: 'Interval (minutes)',
-                            labelStyle: TextStyle(color: Colors.white70),
-                            border: OutlineInputBorder(),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.blue, width: 2),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.red, width: 2),
-                            ),
-                          ),
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Interval cannot be empty';
-                            }
-                            int? intervalValue = int.tryParse(value.trim());
-                            if (intervalValue == null || intervalValue <= 0) {
-                              return 'Interval must be greater than zero';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: width * 0.9,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            enabled: !_isRunning,
+                            maxLength: 100,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z0-9\-._~:/?#\[\]@!$&()*+,;=]')),
+                              FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                            ],
+                            keyboardType: TextInputType.url,
+                            controller: _apiUrlController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              counterText: "",
+                              labelText: 'API URL',
+                              labelStyle: TextStyle(color: Colors.white70),
+                              border: OutlineInputBorder(),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.blue, width: 2),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.red, width: 2),
                               ),
                             ),
-                            onPressed: () => _toggleService(context),
-                            child: Text(
-                              _isRunning ? 'Stop API Calls' : 'Start API Calls',
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 16),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'API URL cannot be empty';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 15),
+                          TextFormField(
+                            enabled: !_isRunning,
+                            maxLength: 4,
+                            controller: _intervalController,
+                            style: const TextStyle(color: Colors.white),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                              FilteringTextInputFormatter.deny(RegExp(r'\.')),
+                            ],
+                            decoration: const InputDecoration(
+                              counterText: "",
+                              labelText: 'Interval (minutes)',
+                              labelStyle: TextStyle(color: Colors.white70),
+                              border: OutlineInputBorder(),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.blue, width: 2),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.red, width: 2),
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Interval cannot be empty';
+                              }
+                              int? intervalValue = int.tryParse(value.trim());
+                              if (intervalValue == null || intervalValue <= 0) {
+                                return 'Interval must be greater than zero';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: width * 0.9,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              onPressed: () => _toggleService(context),
+                              child: Text(
+                                _isRunning ? 'Stop API Calls' : 'Start API Calls',
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: 400,
-                    child: !_contentVideoController.value.isInitialized
-                        ? Container()
-                        : AspectRatio(
-                            aspectRatio:
-                                _contentVideoController.value.aspectRatio,
-                            child: Stack(
-                              children: <Widget>[
-                                _adDisplayContainer,
-                                if (_shouldShowContentVideo)
-                                  VideoPlayer(_contentVideoController),
-                              ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: 400,
+                      child: !_contentVideoController.value.isInitialized
+                          ? Container()
+                          : AspectRatio(
+                              aspectRatio:
+                                  _contentVideoController.value.aspectRatio,
+                              child: Stack(
+                                children: <Widget>[
+                                  _adDisplayContainer,
+                                  if (_shouldShowContentVideo)
+                                    VideoPlayer(_contentVideoController),
+                                ],
+                              ),
                             ),
-                          ),
-                  ),
-                  
-                  // GooglePayButton(paymentConfiguration: paymentConfiguration, paymentItems: paymentItems)
-                ],
+                    ),
+                    _showapps ? _androidApps() : Container(),
+                    SizedBox(height: 5,),
+                    !_showapps ? SizedBox(height: 20,) : Container(),
+                    GestureDetector(
+                      child: SvgPicture.asset("assets/icons/bmcoffee.svg",
+                      height: 100,),
+                      onTap: () {
+                        setState(() {
+                          _showapps = !_showapps;
+                        });
+                      },
+                    ),
+                    
+                    // _submitButton(),
+                    // GooglePayButton(paymentConfiguration: paymentConfiguration, paymentItems: paymentItems)
+                  ],
+                ),
               ),
             ),
           ),
-          // floatingActionButton: FloatingActionButton(
-          //   onPressed: _shouldShowContentVideo ? _pauseContent : _resumeContent,
-          //   child:
-          //       Icon(_shouldShowContentVideo ? Icons.pause : Icons.play_arrow),
-          // ),
         ),
       ),
     );
@@ -412,9 +539,4 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
     });
     return _contentVideoController.pause();
   }
-
-
 }
-
-
-
