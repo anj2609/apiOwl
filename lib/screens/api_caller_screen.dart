@@ -181,19 +181,27 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
   }
 
   Future<void> _onTap(ApplicationMeta app) async {
-    final transactionRef = Random.secure().nextInt(1 << 32).toString();
-    print("Starting transaction with id $transactionRef");
+    try {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final transactionRef = 'TXN_$timestamp';
 
-    final a = await upiPay.initiateTransaction(
-      amount: '15.00',
-      app: app.upiApplication,
-      receiverName: 'Srayansh Gupta',
-      receiverUpiAddress: 'sr.gupta621@oksbi',
-      transactionRef: transactionRef,
-      transactionNote: 'Buy me a coffee',
-    );
+      print("Starting transaction with id $transactionRef");
 
-    print(a);
+      final response = await upiPay.initiateTransaction(
+        amount: '1.00',
+        app: app.upiApplication,
+        receiverName: 'Harshit Ojha',
+        receiverUpiAddress: 'harshitojha3975@okhdfcbank',
+        transactionRef: transactionRef,
+        transactionNote: 'Buy me a coffee',
+      );
+
+      print("Transaction response: $response");
+ 
+    } catch (e) {
+      print("Transaction error: $e");
+ 
+    }
   }
 
   GridView _appsGrid(List<ApplicationMeta> apps) {
@@ -393,8 +401,8 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
                             enabled: !_isRunning,
                             maxLength: 100,
                             inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z0-9\-._~:/?#\[\]@!$&()*+,;=]')),
+                              FilteringTextInputFormatter.allow(RegExp(
+                                  r'[a-zA-Z0-9\-._~:/?#\[\]@!$&()*+,;=]')),
                               FilteringTextInputFormatter.deny(RegExp(r'\s')),
                             ],
                             keyboardType: TextInputType.url,
@@ -464,14 +472,17 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
-                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
                               onPressed: () => _toggleService(context),
                               child: Text(
-                                _isRunning ? 'Stop API Calls' : 'Start API Calls',
+                                _isRunning
+                                    ? 'Stop API Calls'
+                                    : 'Start API Calls',
                                 style: const TextStyle(
                                     color: Colors.white, fontSize: 16),
                               ),
@@ -498,18 +509,26 @@ class _ApiCallerScreenState extends State<ApiCallerScreen>
                             ),
                     ),
                     _showapps ? _androidApps() : Container(),
-                    SizedBox(height: 5,),
-                    !_showapps ? SizedBox(height: 20,) : Container(),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    !_showapps
+                        ? SizedBox(
+                            height: 20,
+                          )
+                        : Container(),
                     GestureDetector(
-                      child: SvgPicture.asset("assets/icons/bmcoffee.svg",
-                      height: 100,),
+                      child: SvgPicture.asset(
+                        "assets/icons/bmcoffee.svg",
+                        height: 100,
+                      ),
                       onTap: () {
                         setState(() {
                           _showapps = !_showapps;
                         });
                       },
                     ),
-                    
+
                     // _submitButton(),
                     // GooglePayButton(paymentConfiguration: paymentConfiguration, paymentItems: paymentItems)
                   ],
