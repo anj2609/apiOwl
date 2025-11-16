@@ -39,5 +39,5 @@ Apiowl is a powerful Flutter app designed to keep APIs awake by sending requests
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/SRAYANSH-GUPTA/ApiOwl.git
+   git clone https://github.com/anj2609/ApiOwl.git
    cd apiowl
